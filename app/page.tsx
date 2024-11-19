@@ -92,8 +92,17 @@ export default function Home() {
     </>
   );
 }
+import Link from "next/link";
 
-const CardItem = ({ barber }: { barber: { name: string; district: string; description: string; image: string; availability: boolean[] } }) => {
+const CardItem = ({
+  barber,
+}: {
+  barber: { name: string; district: string; description: string; image: string; availability: boolean[] };
+}) => {
+  const availabilityTimes = Array.from({ length: 10 }, (_, i) => `${8 + i}:00 AM`).map((time, i) =>
+    i === 4 ? time.replace("12:00 AM", "12:00 PM") : time
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -112,14 +121,21 @@ const CardItem = ({ barber }: { barber: { name: string; district: string; descri
             <DropdownMenuSeparator />
             {availabilityTimes.map((time, index) => (
               <DropdownMenuItem key={index}>
-                <Button
-                  className={`${
-                    barber.availability[index] ? 'bg-green-500' : 'bg-red-500'
-                  } text-white w-full`}
-                  disabled={!barber.availability[index]}
+                <Link
+                  href={{
+                    pathname: "/appointment",
+                    query: { time, barberName: barber.name }, // Pass time and barber info
+                  }}
                 >
-                  {time} - {barber.availability[index] ? 'Available' : 'Not Available'}
-                </Button>
+                  <Button
+                    className={`${
+                      barber.availability[index] ? "bg-green-500" : "bg-red-500"
+                    } text-white w-full`}
+                    disabled={!barber.availability[index]}
+                  >
+                    {time} - {barber.availability[index] ? "Available" : "Not Available"}
+                  </Button>
+                </Link>
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
