@@ -19,6 +19,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 
+// Availability slots (8 AM - 5 PM)
+const availabilityTimes = Array.from({ length: 10 }, (_, i) => `${8 + i}:00 AM`).map((time, i) =>
+  i === 4 ? time.replace("12:00 AM", "12:00 PM") : time
+);
+
 export default function Home() {
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
 
@@ -28,18 +33,21 @@ export default function Home() {
       district: "Downtown",
       description: "Expert in classic and modern cuts.",
       image: "/barber.JPG",
+      availability: [true, false, true, false, true, true, false, true, true, false], // Represents availability for 8 AM to 5 PM
     },
     {
       name: "Sarah's Studio",
       district: "Uptown",
       description: "Specializing in fades and beard grooming.",
       image: "/barber.JPG",
+      availability: [false, true, true, false, true, true, true, false, false, true], // Availability for 8 AM to 5 PM
     },
     {
       name: "Mike's Grooming",
       district: "Midtown",
       description: "Precision cuts and luxury experience.",
       image: "/barber.JPG",
+      availability: [true, true, true, true, false, false, true, false, false, false], // Availability for 8 AM to 5 PM
     },
   ];
 
@@ -85,11 +93,7 @@ export default function Home() {
   );
 }
 
-const CardItem = ({ barber }: { barber: { name: string; district: string; description: string; image: string } }) => {
-  const availabilityTimes = Array.from({ length: 10 }, (_, i) => `${8 + i}:00 AM`).map((time, i) =>
-    i === 4 ? time.replace("12:00 AM", "12:00 PM") : time
-  );
-
+const CardItem = ({ barber }: { barber: { name: string; district: string; description: string; image: string; availability: boolean[] } }) => {
   return (
     <Card>
       <CardHeader>
@@ -107,7 +111,16 @@ const CardItem = ({ barber }: { barber: { name: string; district: string; descri
             <DropdownMenuLabel>Available Times</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {availabilityTimes.map((time, index) => (
-              <DropdownMenuItem key={index}>{time}</DropdownMenuItem>
+              <DropdownMenuItem key={index}>
+                <Button
+                  className={`${
+                    barber.availability[index] ? 'bg-green-500' : 'bg-red-500'
+                  } text-white w-full`}
+                  disabled={!barber.availability[index]}
+                >
+                  {time} - {barber.availability[index] ? 'Available' : 'Not Available'}
+                </Button>
+              </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
