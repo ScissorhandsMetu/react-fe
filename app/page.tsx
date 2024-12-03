@@ -1,8 +1,8 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
-import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -21,76 +21,38 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-// Availability slots (8 AM - 5 PM)
-const availabilityTimes = Array.from(
-  { length: 10 },
-  (_, i) => `${8 + i}:00 AM`
-).map((time, i) => (i === 4 ? time.replace("12:00 AM", "12:00 PM") : time))
+// Define TypeScript interfaces for Barber and Appointment
+interface Appointment {
+  date: string // Appointment date (ISO string format)
+  slotTime: string // Appointment time (ISO string format)
+}
+
+interface Barber {
+  id: number
+  name: string
+  district: string
+  description: string
+  image: string
+  appointments: Appointment[]
+}
 
 export default function Home() {
+  const [barbers, setBarbers] = useState<Barber[]>([])
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null)
 
-  const barbers = [
-    {
-      id: 1,
-      name: "John's Barbershop",
-      district: "Downtown",
-      description: "Expert in classic and modern cuts.",
-      image: "/barber.JPG",
-      availability: [
-        true,
-        false,
-        true,
-        false,
-        true,
-        true,
-        false,
-        true,
-        true,
-        false,
-      ], // Represents availability for 8 AM to 5 PM
-    },
-    {
-      id: 3,
-      name: "Sarah's Studio",
-      district: "Uptown",
-      description: "Specializing in fades and beard grooming.",
-      image: "/barber.JPG",
-      availability: [
-        false,
-        true,
-        true,
-        false,
-        true,
-        true,
-        true,
-        false,
-        false,
-        true,
-      ], // Availability for 8 AM to 5 PM
-    },
-    {
-      id: 2,
-      name: "Mike's Grooming",
-      district: "Midtown",
-      description: "Precision cuts and luxury experience.",
-      image: "/barber.JPG",
-      availability: [
-        true,
-        true,
-        true,
-        true,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-      ], // Availability for 8 AM to 5 PM
-    },
-  ]
+  useEffect(() => {
+    async function fetchBarbers() {
+      try {
+        const response = await fetch("http://localhost:8080/barbers")
+        const data = await response.json()
+        setBarbers(data)
+      } catch (error) {
+        console.error("Error fetching barbers:", error)
+      }
+    }
+    fetchBarbers()
+  }, [])
 
-  // Filter barbers based on the selected district
   const filteredBarbers = selectedDistrict
     ? barbers.filter((barber) => barber.district === selectedDistrict)
     : barbers
@@ -140,7 +102,7 @@ export default function Home() {
         </DropdownMenu>
       </div>
       <section className="grid grid-cols-3 justify-center gap-4 p-4">
-        {filteredBarbers.map((barber, index) => (
+        {filteredBarbers.map((barber) => (
           <CardItem key={barber.id} barber={barber} />
         ))}
       </section>
@@ -148,66 +110,144 @@ export default function Home() {
   )
 }
 
-const CardItem = ({
-  barber,
-}: {
-  barber: {
-    name: string
-    district: string
-    description: string
-    image: string
-    availability: boolean[]
+const CardItem = ({ barber }: { barber: Barber }) => {
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedTime, setSelectedTime] = useState<string | null>(null)
+  const router = useRouter()
+
+  // Generate a list of future dates (next 7 days as an example)
+  const futureDates = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date()
+    date.setDate(date.getDate() + i)
+    return date.toISOString().split("T")[0] // Format as YYYY-MM-DD
+  })
+
+  // Generate available times (8:00 AM to 5:00 PM in one-hour slots)
+  const availableTimes = Array.from({ length: 10 }, (_, i) => {
+    const hour = 8 + i
+    return `${hour.toString().padStart(2, "0")}:00:00` // Format as HH:mm:ss
+  })
+
+  const getFilteredTimes = () => {
+    if (!selectedDate) return []
+
+    return availableTimes.map((time) => {
+      const isUnavailable = barber.appointments.some((appointment) => {
+        const appointmentDate = appointment.date.split("T")[0] // Extract YYYY-MM-DD
+        const appointmentTime = appointment.slotTime.split("T")[1].split("Z")[0] // Extract HH:mm:ss
+        return appointmentDate === selectedDate && appointmentTime === time
+      })
+      return {
+        time,
+        isUnavailable,
+      }
+    })
   }
-}) => {
-  const availabilityTimes = Array.from(
-    { length: 10 },
-    (_, i) => `${8 + i}:00 AM`
-  ).map((time, i) => (i === 4 ? time.replace("12:00 AM", "12:00 PM") : time))
+
+  const filteredTimes = getFilteredTimes()
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="rounded-lg border border-gray-300 p-6 shadow-lg">
+      <CardHeader className="flex flex-col items-center space-y-4">
         <Image
           src={barber.image}
           alt={barber.name}
-          width={200}
-          height={200}
-          className="rounded-lg"
+          width={180}
+          height={180}
+          className="rounded-full border border-gray-200 shadow-md"
         />
-        <CardTitle>{barber.name}</CardTitle>
-        <CardDescription>{barber.district}</CardDescription>
+        <CardTitle className="text-lg font-semibold text-gray-800">
+          {barber.name}
+        </CardTitle>
+        <CardDescription className="text-sm text-gray-600">
+          {barber.district}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <p>{barber.description}</p>
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button>Select Time</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>Available Times</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {availabilityTimes.map((time, index) => (
-              <DropdownMenuItem key={time}>
-                <Link
-                  href={{
-                    pathname: "/appointment",
-                    query: { time, barberName: barber.name }, // Pass time and barber info
-                  }}
-                >
+      <CardContent className="mt-4 space-y-6">
+        <p className="text-center text-sm text-gray-700">
+          {barber.description}
+        </p>
+
+        {/* Buttons Container */}
+        <div className="inline-flex items-center space-x-2">
+          {/* Date Selection */}
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button className="w-full rounded-md bg-black px-4 py-2 text-white transition hover:bg-gray-800">
+                {selectedDate || "Select Date"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="rounded-lg bg-black text-white shadow-md">
+              <DropdownMenuLabel className="text-sm font-medium text-white">
+                Select a Date
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {futureDates.map((date) => (
+                <DropdownMenuItem key={date}>
                   <Button
-                    className={`${
-                      barber.availability[index] ? "bg-green-500" : "bg-red-500"
-                    } w-full text-white`}
-                    disabled={!barber.availability[index]}
+                    className="w-full bg-black px-4 py-2 text-white transition hover:bg-gray-800"
+                    onClick={() => setSelectedDate(date)}
                   >
-                    {time} -{" "}
-                    {barber.availability[index] ? "Available" : "Not Available"}
+                    {date}
                   </Button>
-                </Link>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Time Selection */}
+          {selectedDate && (
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Button className="w-full rounded-md bg-black px-4 py-2 text-white transition hover:bg-gray-800">
+                  {selectedTime || "Select Time"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="rounded-lg bg-black text-white shadow-md">
+                <DropdownMenuLabel className="text-sm font-medium text-white">
+                  Available Times
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {filteredTimes.map(({ time, isUnavailable }) => (
+                  <DropdownMenuItem key={time}>
+                    <Button
+                      className={`w-full rounded-md px-4 py-2 transition ${
+                        isUnavailable
+                          ? "cursor-not-allowed bg-gray-500 text-gray-300"
+                          : "bg-black text-white hover:bg-gray-800"
+                      }`}
+                      disabled={isUnavailable}
+                      onClick={() => setSelectedTime(time)}
+                    >
+                      {time} - {isUnavailable ? "Unavailable" : "Available"}
+                    </Button>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+
+        {/* Appoint Button */}
+        <div className="mt-4">
+          <Button
+            className={`w-full rounded-md px-4 py-2 transition ${
+              selectedDate && selectedTime
+                ? "bg-black text-white hover:bg-gray-800"
+                : "cursor-not-allowed bg-gray-500 text-gray-300"
+            }`}
+            disabled={!selectedDate || !selectedTime}
+            onClick={() =>
+              router.push(
+                `/appointment?barberName=${encodeURIComponent(barber.name)}&time=${encodeURIComponent(
+                  `${selectedDate} ${selectedTime}`
+                )}`
+              )
+            }
+          >
+            Appoint
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )

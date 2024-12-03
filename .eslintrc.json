@@ -13,24 +13,13 @@
   },
   "settings": {
     "tailwindcss": {
-      "callees": [
-        "classnames",
-        "clsx",
-        "ctl",
-        "cva",
-        "tv",
-        "cn"
-      ] // Tailwind utility class detection for specific libraries
+      "callees": ["classnames", "clsx", "ctl", "cva", "tv", "cn"] // Tailwind utility class detection for specific libraries
     }
   },
   "overrides": [
     {
       // Configuration specifically for TypeScript files
-      "files": [
-        "**/*.ts",
-        "**/*.tsx",
-        "**/*.mts"
-      ], // Applies these rules only to TypeScript files
+      "files": ["**/*.ts", "**/*.tsx", "**/*.mts"], // Applies these rules only to TypeScript files
       "plugins": [
         "@typescript-eslint", // TypeScript specific linting rules
         "unused-imports", // Plugin to automatically remove unused imports
@@ -60,9 +49,7 @@
         ],
         "jsx-a11y/label-has-associated-control": "off",
         // Prevent conflicts between Prettier and Airbnb ESLint rules
-        "tailwindcss/no-custom-classname": [
-          "off"
-        ], // Allow custom class names (not restricted to Tailwind)
+        "tailwindcss/no-custom-classname": ["off"], // Allow custom class names (not restricted to Tailwind)
         "import/no-extraneous-dependencies": "warn", // Warn about extraneous dependencies in TypeScript files
         "no-param-reassign": "off", // Allow parameter reassignment
         "consistent-return": "off", // Disable consistent return requirement
