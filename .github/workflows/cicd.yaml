@@ -19,14 +19,13 @@ jobs:
             port: 22
             script: |
                 # Define variables
-                REPO_NAME=$(basename -s .git $(git config --get remote.origin.url))
                 WORK_DIR="/root/"
                 
                 
                 # Pull the repository
                 cd $WORK_DIR
                 if [ -d "react-fe" ]; then
-                  rm -rf "react-fe
+                  rm -rf "react-fe"
                 fi
                 git clone https://github.com/ScissorhandsMetu/react-fe.git
                 
