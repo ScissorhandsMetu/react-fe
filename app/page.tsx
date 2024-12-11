@@ -43,7 +43,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchBarbers() {
       try {
-        const response = await fetch("http://localhost:8080/barbers")
+        const response = await fetch("http://34.142.51.130:8080/barbers")
         const data = await response.json()
         setBarbers(data)
       } catch (error) {
