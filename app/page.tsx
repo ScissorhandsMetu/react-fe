@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-// Define TypeScript interfaces for Barber and Appointment
+// Define TypeScript interfaces for Barber, Appointment, and District
 interface Appointment {
   date: string // Appointment date (ISO string format)
   slotTime: string // Appointment time (ISO string format)
@@ -36,11 +36,18 @@ interface Barber {
   appointments: Appointment[]
 }
 
+interface District {
+  id: number
+  name: string
+}
+
 export default function Home() {
   const [barbers, setBarbers] = useState<Barber[]>([])
+  const [districts, setDistricts] = useState<District[]>([])
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null)
 
   useEffect(() => {
+    // Fetch Barbers
     async function fetchBarbers() {
       try {
         const response = await fetch("http://34.142.51.130:8080/barbers")
@@ -50,7 +57,20 @@ export default function Home() {
         console.error("Error fetching barbers:", error)
       }
     }
+
+    // Fetch Districts
+    async function fetchDistricts() {
+      try {
+        const response = await fetch("http://localhost:8080/districts")
+        const data = await response.json()
+        setDistricts(data)
+      } catch (error) {
+        console.error("Error fetching districts:", error)
+      }
+    }
+
     fetchBarbers()
+    fetchDistricts()
   }, [])
 
   const filteredBarbers = selectedDistrict
@@ -89,15 +109,14 @@ export default function Home() {
             <DropdownMenuItem onClick={() => setSelectedDistrict(null)}>
               All
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSelectedDistrict("Downtown")}>
-              Downtown
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSelectedDistrict("Uptown")}>
-              Uptown
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSelectedDistrict("Midtown")}>
-              Midtown
-            </DropdownMenuItem>
+            {districts.map((district) => (
+              <DropdownMenuItem
+                key={district.id}
+                onClick={() => setSelectedDistrict(district.name)}
+              >
+                {district.name}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -168,9 +187,7 @@ const CardItem = ({ barber }: { barber: Barber }) => {
           {barber.description}
         </p>
 
-        {/* Buttons Container */}
         <div className="inline-flex items-center space-x-2">
-          {/* Date Selection */}
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Button className="w-full rounded-md bg-black px-4 py-2 text-white transition hover:bg-gray-800">
@@ -195,7 +212,6 @@ const CardItem = ({ barber }: { barber: Barber }) => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Time Selection */}
           {selectedDate && (
             <DropdownMenu>
               <DropdownMenuTrigger>
@@ -228,7 +244,6 @@ const CardItem = ({ barber }: { barber: Barber }) => {
           )}
         </div>
 
-        {/* Appoint Button */}
         <div className="mt-4">
           <Button
             className={`w-full rounded-md px-4 py-2 transition ${
@@ -239,9 +254,9 @@ const CardItem = ({ barber }: { barber: Barber }) => {
             disabled={!selectedDate || !selectedTime}
             onClick={() =>
               router.push(
-                `/appointment?barberName=${encodeURIComponent(barber.name)}&time=${encodeURIComponent(
-                  `${selectedDate} ${selectedTime}`
-                )}`
+                `/appointment?barberName=${encodeURIComponent(
+                  barber.name
+                )}&time=${encodeURIComponent(`${selectedDate} ${selectedTime}`)}`
               )
             }
           >
