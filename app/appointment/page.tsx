@@ -17,9 +17,51 @@ const AppointmentContent = () => {
   const [service, setService] = useState("haircut")
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+
+    // Prepare the data to be sent to the backend
+    const appointmentData = {
+    customerName: name + " " + surname,
+    customerEmail: email,
+    customerPhone: phone,
+    appointmentDate: time,  // You should convert this to a proper format if needed
+    barberName: barberName,
+    service: service,
+    }
+    try {
+      // Send POST request to create appointment
+      //http://34.142.51.130:8080
+      //http://localhost:8080/districts
+      const response = await fetch("http://localhost:8080/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(appointmentData),
+      })
+
+      if (!response.ok) {
+        // Handle backend errors
+        const data = await response.json()
+        console.error("Error fetching barbers:")
+        setLoading(false)
+        return
+      }
+
+      // If appointment is created successfully
+      const data = await response.json()
+      alert(`Appointment confirmed with ${barberName} for ${time}.`)
+      setLoading(false)
+      router.push("/") // Redirect back to the homepage after submission
+    } catch (error) {
+      // Handle fetch errors
+      console.error("An error occurred. Please try again later.")
+      setLoading(false)
+      console.error(error)
+    }
+    
     setTimeout(() => {
       alert(`Appointment confirmed with ${barberName} for ${time}.`)
       setLoading(false)
