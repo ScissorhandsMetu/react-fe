@@ -25,7 +25,7 @@ const AppointmentContent = () => {
   const [service, setService] = useState("haircut")
   const [loading, setLoading] = useState(false)
 
-  const [errors, setErrors] = useState<{ 
+  const [errors, setErrors] = useState<{
     name?: string
     surname?: string
     email?: string
@@ -69,7 +69,9 @@ const AppointmentContent = () => {
       }
 
       const data = await response.json()
-      alert(`Appointment confirmed with Barber ID: ${barberId} on ${appointmentDate} at ${slotTime}.`)
+      alert(
+        `Appointment confirmed with Barber ID: ${barberId} on ${appointmentDate} at ${slotTime}.`
+      )
       setLoading(false)
       router.push("/") // Redirect to home after successful booking
     } catch (error) {
@@ -122,12 +124,13 @@ const AppointmentContent = () => {
           Missing Appointment Information
         </h1>
         <p className="mt-2 text-lg text-gray-700">
-          It seems the appointment details are incomplete. Please go back and select a time and barber again.
+          It seems the appointment details are incomplete. Please go back and
+          select a time and barber again.
         </p>
         <button
           type="button"
           onClick={() => router.push("/")}
-          className="mt-4 rounded-full bg-primary px-6 py-2 text-white transition-all hover:bg-primary-dark"
+          className="hover:bg-primary-dark mt-4 rounded-full bg-primary px-6 py-2 text-white transition-all"
         >
           Back to Home
         </button>
@@ -146,7 +149,8 @@ const AppointmentContent = () => {
           Barber ID: <span className="text-primary">{barberId}</span>
         </h2>
         <h3 className="text-xl text-gray-600">
-          Appointment Date: <span className="text-primary">{appointmentDate}</span>
+          Appointment Date:{" "}
+          <span className="text-primary">{appointmentDate}</span>
         </h3>
         <h3 className="text-xl text-gray-600">
           Slot Time: <span className="text-primary">{slotTime}</span>
@@ -156,7 +160,10 @@ const AppointmentContent = () => {
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* First Name */}
         <div>
-          <label htmlFor="firstName" className="block text-lg font-medium text-gray-700">
+          <label
+            htmlFor="firstName"
+            className="block text-lg font-medium text-gray-700"
+          >
             First Name
           </label>
           <input
@@ -174,7 +181,10 @@ const AppointmentContent = () => {
 
         {/* Last Name */}
         <div>
-          <label htmlFor="lastName" className="block text-lg font-medium text-gray-700">
+          <label
+            htmlFor="lastName"
+            className="block text-lg font-medium text-gray-700"
+          >
             Last Name
           </label>
           <input
@@ -192,7 +202,10 @@ const AppointmentContent = () => {
 
         {/* Email */}
         <div>
-          <label htmlFor="email" className="block text-lg font-medium text-gray-700">
+          <label
+            htmlFor="email"
+            className="block text-lg font-medium text-gray-700"
+          >
             Email
           </label>
           <input
@@ -210,7 +223,10 @@ const AppointmentContent = () => {
 
         {/* Phone */}
         <div>
-          <label htmlFor="phone" className="block text-lg font-medium text-gray-700">
+          <label
+            htmlFor="phone"
+            className="block text-lg font-medium text-gray-700"
+          >
             Phone Number
           </label>
           <input
@@ -239,7 +255,11 @@ const AppointmentContent = () => {
           </select>
         </div>
 
-        <button type="submit" disabled={loading} className="w-full bg-primary text-white py-3 rounded-lg">
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg bg-primary py-3 text-white"
+        >
           {loading ? "Booking..." : "Confirm Appointment"}
         </button>
       </form>

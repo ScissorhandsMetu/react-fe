@@ -159,7 +159,7 @@ const CardItem = ({ barber }: { barber: Barber }) => {
     if (!selectedDate) return []
 
     return availableTimes.map((time) => {
-      const isUnavailable = barber.appointments.some((appointment) => {
+      const isUnavailable = (barber.appointments || []).some((appointment) => {
         const appointmentDate = appointment.date.split("T")[0]
         const appointmentTime = appointment.slotTime
         return appointmentDate === selectedDate && appointmentTime === time
@@ -241,7 +241,7 @@ const CardItem = ({ barber }: { barber: Barber }) => {
         <Button
           disabled={!selectedDate || !selectedTime}
           onClick={handleAppointment}
-          className="w-full mt-4 bg-black text-white"
+          className="mt-4 w-full bg-black text-white"
         >
           Book Appointment
         </Button>
