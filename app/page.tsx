@@ -21,10 +21,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-// Define TypeScript interfaces for Barber, Appointment, and District
+// Define TypeScript interfaces
 interface Appointment {
   date: string // Appointment date (ISO string format)
-  slotTime: string // Appointment time (ISO string format)
+  slotTime: string // Appointment time (HH:mm:ss)
 }
 
 interface Barber {
@@ -50,8 +50,6 @@ export default function Home() {
     // Fetch Barbers
     async function fetchBarbers() {
       try {
-        // "http://localhost:8080/barbers"
-        // "http://34.142.51.130:8080/barbers"
         const response = await fetch("http://34.142.51.130:8080/barbers")
         const data = await response.json()
         setBarbers(data)
@@ -63,8 +61,6 @@ export default function Home() {
     // Fetch Districts
     async function fetchDistricts() {
       try {
-        // "http://localhost:8080/districts"
-        // "http://34.142.51.130:8080/districts"
         const response = await fetch("http://34.142.51.130:8080/districts")
         const data = await response.json()
         setDistricts(data)
@@ -83,6 +79,7 @@ export default function Home() {
 
   return (
     <>
+      {/* Navbar */}
       <nav className="flex items-center gap-8 bg-secondary p-4">
         <div className="flex items-center gap-4">
           <img
@@ -94,6 +91,8 @@ export default function Home() {
         </div>
         <Button>Contact Us</Button>
       </nav>
+
+      {/* Hero Section */}
       <section className="flex flex-col items-center justify-center gap-4 bg-secondary/40">
         <img
           src="Screenshot_processed.png"
@@ -102,6 +101,8 @@ export default function Home() {
         />
         <h1 className="text-7xl font-bold">ScissorHands</h1>
       </section>
+
+      {/* District Filter */}
       <div className="flex items-center justify-center">
         <DropdownMenu>
           <DropdownMenuTrigger>
@@ -124,6 +125,8 @@ export default function Home() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Barber Cards */}
       <section className="grid grid-cols-3 justify-center gap-4 p-4">
         {filteredBarbers.map((barber) => (
           <CardItem key={barber.id} barber={barber} />
@@ -133,22 +136,23 @@ export default function Home() {
   )
 }
 
+// 🛠️ CardItem Component
 const CardItem = ({ barber }: { barber: Barber }) => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const router = useRouter()
 
-  // Generate a list of future dates (next 7 days as an example)
+  // Generate future dates (next 7 days)
   const futureDates = Array.from({ length: 7 }, (_, i) => {
     const date = new Date()
     date.setDate(date.getDate() + i)
-    return date.toISOString().split("T")[0] // Format as YYYY-MM-DD
+    return date.toISOString().split("T")[0]
   })
 
   // Generate available times (8:00 AM to 5:00 PM in one-hour slots)
   const availableTimes = Array.from({ length: 10 }, (_, i) => {
     const hour = 8 + i
-    return `${hour.toString().padStart(2, "0")}:00:00` // Format as HH:mm:ss
+    return `${hour.toString().padStart(2, "0")}:00:00`
   })
 
   const getFilteredTimes = () => {
@@ -156,18 +160,25 @@ const CardItem = ({ barber }: { barber: Barber }) => {
 
     return availableTimes.map((time) => {
       const isUnavailable = barber.appointments.some((appointment) => {
-        const appointmentDate = appointment.date.split("T")[0] // Extract YYYY-MM-DD
-        const appointmentTime = appointment.slotTime.split("T")[1].split("Z")[0] // Extract HH:mm:ss
+        const appointmentDate = appointment.date.split("T")[0]
+        const appointmentTime = appointment.slotTime
         return appointmentDate === selectedDate && appointmentTime === time
       })
-      return {
-        time,
-        isUnavailable,
-      }
+      return { time, isUnavailable }
     })
   }
 
   const filteredTimes = getFilteredTimes()
+
+  const handleAppointment = () => {
+    if (selectedDate && selectedTime) {
+      router.push(
+        `/appointment?barber_id=${barber.id}&appointment_date=${encodeURIComponent(
+          `${selectedDate} ${selectedTime}`
+        )}`
+      )
+    }
+  }
 
   return (
     <Card className="rounded-lg border border-gray-300 p-6 shadow-lg">
@@ -186,87 +197,54 @@ const CardItem = ({ barber }: { barber: Barber }) => {
           {barber.district}
         </CardDescription>
       </CardHeader>
-      <CardContent className="mt-4 space-y-6">
-        <p className="text-center text-sm text-gray-700">
-          {barber.description}
-        </p>
+      <CardContent>
+        {/* Date Selection */}
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Button className="w-full bg-black text-white">
+              {selectedDate || "Select Date"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {futureDates.map((date) => (
+              <DropdownMenuItem key={date}>
+                <Button onClick={() => setSelectedDate(date)}>{date}</Button>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <div className="inline-flex items-center space-x-2">
+        {/* Time Selection */}
+        {selectedDate && (
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <Button className="w-full rounded-md bg-black px-4 py-2 text-white transition hover:bg-gray-800">
-                {selectedDate || "Select Date"}
+              <Button className="w-full bg-black text-white">
+                {selectedTime || "Select Time"}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="rounded-lg bg-black text-white shadow-md">
-              <DropdownMenuLabel className="text-sm font-medium text-white">
-                Select a Date
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {futureDates.map((date) => (
-                <DropdownMenuItem key={date}>
+            <DropdownMenuContent>
+              {filteredTimes.map(({ time, isUnavailable }) => (
+                <DropdownMenuItem key={time}>
                   <Button
-                    className="w-full bg-black px-4 py-2 text-white transition hover:bg-gray-800"
-                    onClick={() => setSelectedDate(date)}
+                    disabled={isUnavailable}
+                    onClick={() => setSelectedTime(time)}
                   >
-                    {date}
+                    {time} {isUnavailable ? "(Unavailable)" : ""}
                   </Button>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+        )}
 
-          {selectedDate && (
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Button className="w-full rounded-md bg-black px-4 py-2 text-white transition hover:bg-gray-800">
-                  {selectedTime || "Select Time"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="rounded-lg bg-black text-white shadow-md">
-                <DropdownMenuLabel className="text-sm font-medium text-white">
-                  Available Times
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {filteredTimes.map(({ time, isUnavailable }) => (
-                  <DropdownMenuItem key={time}>
-                    <Button
-                      className={`w-full rounded-md px-4 py-2 transition ${
-                        isUnavailable
-                          ? "cursor-not-allowed bg-gray-500 text-gray-300"
-                          : "bg-black text-white hover:bg-gray-800"
-                      }`}
-                      disabled={isUnavailable}
-                      onClick={() => setSelectedTime(time)}
-                    >
-                      {time} - {isUnavailable ? "Unavailable" : "Available"}
-                    </Button>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-
-        <div className="mt-4">
-          <Button
-            className={`w-full rounded-md px-4 py-2 transition ${
-              selectedDate && selectedTime
-                ? "bg-black text-white hover:bg-gray-800"
-                : "cursor-not-allowed bg-gray-500 text-gray-300"
-            }`}
-            disabled={!selectedDate || !selectedTime}
-            onClick={() =>
-              router.push(
-                `/appointment?barberName=${encodeURIComponent(
-                  barber.name
-                )}&time=${encodeURIComponent(`${selectedDate} ${selectedTime}`)}`
-              )
-            }
-          >
-            Appoint
-          </Button>
-        </div>
+        {/* Appointment Button */}
+        <Button
+          disabled={!selectedDate || !selectedTime}
+          onClick={handleAppointment}
+          className="w-full mt-4 bg-black text-white"
+        >
+          Book Appointment
+        </Button>
       </CardContent>
     </Card>
   )
