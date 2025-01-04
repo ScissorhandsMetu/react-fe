@@ -50,8 +50,8 @@ export default function Home() {
     // Fetch Barbers
     async function fetchBarbers() {
       try {
-        //"http://localhost:8080/barbers"
-        //"http://34.142.51.130:8080/barbers"
+        // "http://localhost:8080/barbers"
+        // "http://34.142.51.130:8080/barbers"
         const response = await fetch("http://34.142.51.130:8080/barbers")
         const data = await response.json()
         setBarbers(data)
@@ -63,8 +63,8 @@ export default function Home() {
     // Fetch Districts
     async function fetchDistricts() {
       try {
-        //"http://localhost:8080/districts"
-        //"http://34.142.51.130:8080/districts"
+        // "http://localhost:8080/districts"
+        // "http://34.142.51.130:8080/districts"
         const response = await fetch("http://34.142.51.130:8080/districts")
         const data = await response.json()
         setDistricts(data)
