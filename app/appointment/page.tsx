@@ -52,7 +52,7 @@ const AppointmentContent = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/appointments", {
+      const response = await fetch("http://34.142.51.130:8080/appointments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
