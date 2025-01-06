@@ -70,7 +70,7 @@ const AppointmentContent = () => {
 
       const data = await response.json()
       alert(
-        `Appointment confirmed with Barber ID: ${barberId} on ${appointmentDate} at ${slotTime}.`
+        `Appointment confirmed with Barber ID: ${barberId} on ${appointmentDate} at ${slotTime}. Check your email for confirmation.`
       )
       setLoading(false)
       router.push("/") // Redirect to home after successful booking
