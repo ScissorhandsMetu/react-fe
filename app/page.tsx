@@ -158,12 +158,25 @@ const CardItem = ({ barber }: { barber: Barber }) => {
   const getFilteredTimes = () => {
     if (!selectedDate) return []
 
+    const now = new Date() // Current date and time
+    const today = now.toISOString().split("T")[0] // Current date in YYYY-MM-DD format
+    const currentHour = now.getHours() // Current hour in 24-hour format
+
     return availableTimes.map((time) => {
+      const [hour] = time.split(":") // Extract hour from time (HH:mm:ss)
+
+      // Check if the slot is in the past
+      const isPast = selectedDate === today && parseInt(hour, 10) <= currentHour
+
+      // Check if the slot is already booked
       const isUnavailable = (barber.appointments || []).some((appointment) => {
         const appointmentDate = appointment.date.split("T")[0]
         return appointmentDate === selectedDate && appointment.slotTime === time
       })
-      return { time, isUnavailable }
+      return {
+        time,
+        isUnavailable: isPast || isUnavailable, // Combine past and booked logic
+      }
     })
   }
 
