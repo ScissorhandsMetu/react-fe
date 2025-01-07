@@ -45,6 +45,7 @@ export default function Home() {
   const [barbers, setBarbers] = useState<Barber[]>([])
   const [districts, setDistricts] = useState<District[]>([])
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     // Fetch Barbers
@@ -77,6 +78,10 @@ export default function Home() {
     ? barbers.filter((barber) => barber.district === selectedDistrict)
     : barbers
 
+  const handleCancelAppointment = () => {
+    router.push("/cancelAppointment") // Redirect to cancel booking page
+  }
+
   return (
     <>
       {/* Navbar */}
@@ -91,7 +96,6 @@ export default function Home() {
         </div>
         <Button>Contact Us</Button>
       </nav>
-
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center gap-4 bg-secondary/40">
         <img
@@ -101,7 +105,6 @@ export default function Home() {
         />
         <h1 className="text-7xl font-bold">ScissorHands</h1>
       </section>
-
       {/* District Filter */}
       <div className="flex items-center justify-center">
         <DropdownMenu>
@@ -124,9 +127,16 @@ export default function Home() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
 
-      {/* Barber Cards */}
+        {/* NEW: Cancel Appointment Button */}
+        <Button
+          className="bg-black text-white hover:bg-red-600"
+          onClick={handleCancelAppointment}
+        >
+          Cancel Appointment
+        </Button>
+      </div>
+      ß{/* Barber Cards */}
       <section className="grid grid-cols-3 justify-center gap-4 p-4">
         {filteredBarbers.map((barber) => (
           <CardItem key={barber.id} barber={barber} />
